@@ -1,34 +1,40 @@
 class Solution {
 public:
     int intersectionSizeTwo(vector<vector<int>>& intervals) {
-        if(intervals.size()==1)return 2;
-        vector<int>a,b;
+        if (intervals.size() == 1) return 2;
 
-        for(auto it:intervals){
+        // sort intervals properly: end ascending, start descending
+        sort(intervals.begin(), intervals.end(), [](auto &x, auto &y) {
+            if (x[1] == y[1]) return x[0] > y[0];
+            return x[1] < y[1];
+        });
+
+        vector<int> a, b;
+        for (auto &it : intervals) {
             a.push_back(it[0]);
             b.push_back(it[1]);
         }
 
-        sort(a.begin(),a.end());
-        sort(b.begin(),b.end());
+        // last two chosen points
+        int x = b[0] - 1;
+        int y = b[0];
+        int ans = 2;
 
-        int ans=2;
-        int aft=a[1],pre=b[0];
-        int i=1,j=0;
-        while(i<a.size() && j<b.size()){
-            if(aft==pre){
+        for (int i = 1; i < intervals.size(); i++) {
+            // case 1: interval already contains both
+            if (a[i] <= x && y <= b[i]) continue;
+
+            // case 2: interval contains only y
+            if (a[i] <= y && y <= b[i]) {
                 ans++;
-                aft=max(aft,a[i++]);
-                pre=min(pre,b[j++]);
+                x = y;
+                y = b[i];
             }
-            else if(aft>pre){
-                ans+=2;
-                aft=max(aft,a[i++]);
-                pre=max(pre,b[j++]);
-            }
-            else{
-                aft=max(aft,a[i++]);
-                pre=max(pre,b[j++]);
+            // case 3: contains none
+            else {
+                ans += 2;
+                x = b[i] - 1;
+                y = b[i];
             }
         }
         return ans;
